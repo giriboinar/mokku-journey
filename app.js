@@ -427,7 +427,7 @@
 
   /* ---------------- ambient music (WebAudio, synthesized) ---------------- */
   var AudioEngine = {
-    on: false, ctx: null, master: null, bellTimer: null,
+    on: false, ctx: null, master: null, bellTimer: null, chant: null,
     start: function () {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
@@ -463,6 +463,18 @@
       this.on = true;
       this.master.gain.cancelScheduledValues(this.ctx.currentTime);
       this.master.gain.linearRampToValueAtTime(0.14, this.ctx.currentTime + 2.5);
+      // "Om Namo Venkatesaya" chant — loops under the ambient drone.
+      try {
+        if (!this.chant) {
+          var ch = new Audio('om-namo-venkatesaya.mp3');
+          ch.loop = true;
+          ch.volume = 0.85;
+          ch.preload = 'auto';
+          this.chant = ch;
+        }
+        var playP = this.chant.play();
+        if (playP && playP.catch) playP.catch(function () { /* autoplay guard */ });
+      } catch (e) { /* audio file optional — drone still plays */ }
     },
     _bell: function () {
       if (!this.on || !this.ctx) return;
@@ -487,6 +499,7 @@
       this.bellTimer = setTimeout(tick, 9000);
     },
     stop: function () {
+      if (this.chant) { try { this.chant.pause(); } catch (e) {} }
       if (!this.ctx) { this.on = false; return; }
       this.on = false;
       this.master.gain.cancelScheduledValues(this.ctx.currentTime);

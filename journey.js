@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  var IMG = 'assets/images/stage-';
+  var IMG = 'stage-';
 
   var STAGES = [
     {

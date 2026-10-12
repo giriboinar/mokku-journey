@@ -101,7 +101,7 @@
     var mapped = arr.map(function (s, i) {
       return {
         id: s.id != null ? s.id : i + 1,
-        image: s.image || ('assets/images/stage-' + String(i + 1).padStart(2, '0') + '.jpg'),
+        image: s.image || ('stage-' + String(i + 1).padStart(2, '0') + '.jpg'),
         motion: s.motion || 'float',
         tag_en: s.tag_en || '', tag_te: s.tag_te || '',
         title_en: s.title_en || s.title || 'Stage ' + (i + 1),

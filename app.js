@@ -7,7 +7,7 @@
   'use strict';
 
   /* ---------------- i18n UI strings ---------------- */
-  var STRINGS = {
+  const STRINGS = {
     en: {
       tagline: "From Muddanur to Tirumala — a vow fulfilled",
       start: 'Begin the Journey',
@@ -69,7 +69,7 @@
   };
 
   /* ---------------- state ---------------- */
-  var state = {
+  const state = {
     stages: [],
     index: 0,
     lang: 'en',
@@ -77,12 +77,11 @@
     autoplay: null,
     dataSource: 'embedded'
   };
-  var reducedMotion = window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = globalThis.matchMedia &&
+    globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------------- helpers ---------------- */
   function $(sel, root) { return (root || document).querySelector(sel); }
-  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function t() { return STRINGS[state.lang]; }
   function pick(stage, key) {
     return state.lang === 'te' ? (stage[key + '_te'] || stage[key + '_en']) : stage[key + '_en'];
@@ -96,9 +95,9 @@
   /* ---------------- data loading ---------------- */
   function normalizeApiStages(raw) {
     if (!raw) return null;
-    var arr = Array.isArray(raw) ? raw : raw.stages;
+    const arr = Array.isArray(raw) ? raw : raw.stages;
     if (!Array.isArray(arr) || arr.length === 0) return null;
-    var mapped = arr.map(function (s, i) {
+    const mapped = arr.map(function (s, i) {
       return {
         id: s.id != null ? s.id : i + 1,
         image: s.image || ('stage-' + String(i + 1).padStart(2, '0') + '.jpg'),
@@ -118,23 +117,23 @@
   }
 
   function loadStages() {
-    var fallback = (window.RAJA_JOURNEY && window.RAJA_JOURNEY.stages) || [];
+    const fallback = (globalThis.RAJA_JOURNEY && globalThis.RAJA_JOURNEY.stages) || [];
     state.stages = fallback;
     state.dataSource = 'embedded';
     renderAll();
 
     // Try the backend; keep the embedded copy on any failure.
-    var ctrl = null;
-    try { ctrl = new AbortController(); } catch (e) { ctrl = null; }
-    var timer = setTimeout(function () { if (ctrl) { try { ctrl.abort(); } catch (e) {} } }, 4000);
-    var opts = {};
+    let ctrl = null;
+    try { ctrl = new AbortController(); } catch { ctrl = null; }
+    const timer = setTimeout(function () { if (ctrl) { try { ctrl.abort(); } catch { /* ignore */ } } }, 4000);
+    const opts = {};
     if (ctrl) opts.signal = ctrl.signal;
     fetch('/api/stages', opts).then(function (res) {
       clearTimeout(timer);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     }).then(function (data) {
-      var mapped = normalizeApiStages(data);
+      const mapped = normalizeApiStages(data);
       if (mapped) {
         state.stages = mapped;
         state.dataSource = 'api';
@@ -154,41 +153,41 @@
   }
 
   function renderChrome() {
-    var s = t();
+    const s = t();
     document.documentElement.lang = state.lang === 'te' ? 'te' : 'en';
-    var tagline = $('#tagline'); if (tagline) tagline.textContent = s.tagline;
-    var langBtn = $('#lang-toggle');
+    const tagline = $('#tagline'); if (tagline) tagline.textContent = s.tagline;
+    const langBtn = $('#lang-toggle');
     if (langBtn) { langBtn.textContent = s.langBtn; langBtn.setAttribute('aria-label', s.langLabel); }
-    var musicBtn = $('#music-toggle');
+    const musicBtn = $('#music-toggle');
     if (musicBtn) { musicBtn.textContent = AudioEngine.on ? s.musicOn : s.musicOff; }
-    var h1 = $('#app-title');
-    var appName = state.lang === 'te' ? '\u0c30\u0c3e\u0c1c\u0c3e \u0c2e\u0c4a\u0c15\u0c4d\u0c15\u0c41 \u0c2f\u0c3e\u0c24\u0c4d\u0c30' : "Raja's Mokku Journey";
+    const h1 = $('#app-title');
+    const appName = state.lang === 'te' ? '\u0c30\u0c3e\u0c1c\u0c3e \u0c2e\u0c4a\u0c15\u0c4d\u0c15\u0c41 \u0c2f\u0c3e\u0c24\u0c4d\u0c30' : "Raja's Mokku Journey";
     if (h1) h1.textContent = appName;
-    var heroT = $('#hero-title');
+    const heroT = $('#hero-title');
     if (heroT) heroT.textContent = appName;
-    var startBtn = $('#start-btn'); if (startBtn) startBtn.textContent = s.start;
-    var tlT = $('#timeline-title'); if (tlT) tlT.textContent = s.timelineTitle;
-    var tlS = $('#timeline-sub'); if (tlS) tlS.textContent = s.timelineSub;
-    var rT = $('#route-title'); if (rT) rT.textContent = s.routeTitle;
-    var rS = $('#route-sub'); if (rS) rS.textContent = s.routeSub;
-    var replayBtn = $('#replay-btn'); if (replayBtn) replayBtn.textContent = s.replay;
-    var watchBtn = $('#watchall-btn'); if (watchBtn) watchBtn.textContent = state.autoplay ? s.stopWatch : s.watchAll;
-    var foot = $('#footer-note'); if (foot) foot.textContent = s.closing;
+    const startBtn = $('#start-btn'); if (startBtn) startBtn.textContent = s.start;
+    const tlT = $('#timeline-title'); if (tlT) tlT.textContent = s.timelineTitle;
+    const tlS = $('#timeline-sub'); if (tlS) tlS.textContent = s.timelineSub;
+    const rT = $('#route-title'); if (rT) rT.textContent = s.routeTitle;
+    const rS = $('#route-sub'); if (rS) rS.textContent = s.routeSub;
+    const replayBtn = $('#replay-btn'); if (replayBtn) replayBtn.textContent = s.replay;
+    const watchBtn = $('#watchall-btn'); if (watchBtn) watchBtn.textContent = state.autoplay ? s.stopWatch : s.watchAll;
+    const foot = $('#footer-note'); if (foot) foot.textContent = s.closing;
   }
 
   function renderHero() {
-    var hero = $('#hero-media');
+    const hero = $('#hero-media');
     if (!hero || !state.stages.length) return;
-    var stage = state.stages[0];
+    const stage = state.stages[0];
     hero.innerHTML = '';
-    var img = document.createElement('img');
+    const img = document.createElement('img');
     img.src = stage.image;
     img.alt = pick(stage, 'alt');
     img.className = 'hero-img motion-float';
     img.addEventListener('error', function () { showImgFallback(hero, stage); });
     img.addEventListener('load', function () { hero.classList.add('loaded'); });
     hero.appendChild(img);
-    var skel = document.createElement('div');
+    const skel = document.createElement('div');
     skel.className = 'img-skeleton';
     skel.setAttribute('aria-hidden', 'true');
     skel.textContent = t().imgLoading;
@@ -196,17 +195,17 @@
   }
 
   function renderTimeline() {
-    var wrap = $('#timeline');
+    const wrap = $('#timeline');
     if (!wrap) return;
     wrap.innerHTML = '';
     state.stages.forEach(function (stage, i) {
-      var card = document.createElement('button');
+      const card = document.createElement('button');
       card.type = 'button';
       card.className = 'tl-card';
       card.setAttribute('aria-label', (state.lang === 'te' ? t().stageOf + ' ' + stage.id + ': ' : 'Stage ' + stage.id + ': ') + pick(stage, 'title'));
-      var thumb = document.createElement('span');
+      const thumb = document.createElement('span');
       thumb.className = 'tl-thumb';
-      var img = document.createElement('img');
+      const img = document.createElement('img');
       img.loading = 'lazy';
       img.src = stage.image;
       img.alt = '';
@@ -216,10 +215,10 @@
         thumb.innerHTML = '<span class="thumb-om" aria-hidden="true">\u0950</span>';
       });
       thumb.appendChild(img);
-      var num = document.createElement('span');
+      const num = document.createElement('span');
       num.className = 'tl-num';
       num.textContent = String(stage.id).padStart(2, '0');
-      var ttl = document.createElement('span');
+      const ttl = document.createElement('span');
       ttl.className = 'tl-title';
       ttl.textContent = pick(stage, 'title');
       card.appendChild(thumb); card.appendChild(num); card.appendChild(ttl);
@@ -230,34 +229,34 @@
 
   /* Interactive SVG route map: Muddanur → Tirupati → Srivari Mettu → Tirumala → Home */
   function renderRouteMap() {
-    var svg = $('#route-svg');
+    const svg = $('#route-svg');
     if (!svg) return;
-    var s = t();
-    var stops = [
+    const s = t();
+    const stops = [
       { key: 'muddanur', stage: 2, x: 60,  y: 150 },  // stage index 2 (stage 3)
       { key: 'tirupati', stage: 4, x: 200, y: 110 },  // stage 5
       { key: 'mettu',    stage: 6, x: 340, y: 130 },  // stage 7
       { key: 'tirumala', stage: 12, x: 480, y: 70 },  // stage 13
       { key: 'home',     stage: 15, x: 340, y: 190 }  // stage 16 (return leg)
     ];
-    var NS = 'http://www.w3.org/2000/svg';
+    const NS = 'http://www.w3.org/2000/svg';
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     function el(name, attrs) {
-      var n = document.createElementNS(NS, name);
-      for (var k in attrs) n.setAttribute(k, attrs[k]);
+      const n = document.createElementNS(NS, name);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
       return n;
     }
-    var path = el('path', {
+    const path = el('path', {
       d: 'M60,150 C110,140 150,120 200,110 C260,98 300,120 340,130 C400,142 440,100 480,70 C470,120 410,160 340,190 C260,215 140,200 60,150 Z',
       fill: 'none', stroke: '#d4a017', 'stroke-width': '2.5',
       'stroke-dasharray': '7 6', opacity: '0.85', class: 'route-path'
     });
     svg.appendChild(path);
     stops.forEach(function (st) {
-      var g = el('g', { class: 'route-stop', tabindex: '0', role: 'button',
+      const g = el('g', { class: 'route-stop', tabindex: '0', role: 'button',
         'aria-label': s.route[st.key] });
       g.appendChild(el('circle', { cx: st.x, cy: st.y, r: 13, class: 'route-dot' }));
-      var label = el('text', { x: st.x, y: st.y + 32, 'text-anchor': 'middle', class: 'route-label' });
+      const label = el('text', { x: st.x, y: st.y + 32, 'text-anchor': 'middle', class: 'route-label' });
       label.textContent = s.route[st.key];
       g.appendChild(label);
       function jump() { goToStage(st.stage); }
@@ -272,14 +271,14 @@
   /* ---------------- scene view ---------------- */
   function showView(name) {
     state.view = name;
-    var landing = $('#view-landing'), scene = $('#view-scene');
+    const landing = $('#view-landing'), scene = $('#view-scene');
     if (landing) landing.hidden = name !== 'landing';
     if (scene) scene.hidden = name !== 'scene';
     if (name === 'scene') {
-      var h = $('#scene-title');
+      const h = $('#scene-title');
       if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
     }
-    window.scrollTo(0, 0);
+    globalThis.scrollTo(0, 0);
   }
 
   function goToStage(i) {
@@ -292,9 +291,9 @@
 
   function showImgFallback(container, stage) {
     container.classList.add('img-missing');
-    var skel = container.querySelector('.img-skeleton');
+    const skel = container.querySelector('.img-skeleton');
     if (skel) skel.remove();
-    var fb = document.createElement('div');
+    const fb = document.createElement('div');
     fb.className = 'img-fallback';
     fb.setAttribute('role', 'img');
     fb.setAttribute('aria-label', pick(stage, 'alt'));
@@ -305,22 +304,22 @@
   }
 
   function renderScene(i, instant) {
-    var stage = state.stages[i];
+    const stage = state.stages[i];
     if (!stage) return;
-    var s = t();
-    var scene = $('#view-scene');
+    const s = t();
+    const scene = $('#view-scene');
     if (scene) scene.classList.remove('scene-enter');
-    var media = $('#scene-media');
+    const media = $('#scene-media');
     media.innerHTML = '';
     media.className = 'scene-media motion-' + (stage.motion || 'float');
-    var img = document.createElement('img');
+    const img = document.createElement('img');
     img.src = stage.image;
     img.alt = pick(stage, 'alt');
     img.className = 'scene-img';
     img.addEventListener('error', function () { showImgFallback(media, stage); });
     img.addEventListener('load', function () { media.classList.add('loaded'); });
     media.appendChild(img);
-    var skel = document.createElement('div');
+    const skel = document.createElement('div');
     skel.className = 'img-skeleton';
     skel.setAttribute('aria-hidden', 'true');
     skel.textContent = s.imgLoading;
@@ -330,8 +329,8 @@
     $('#scene-title').textContent = pick(stage, 'title');
     $('#scene-desc').textContent = pick(stage, 'desc');
 
-    var cap = $('#scene-caption');
-    var capText = state.lang === 'te' ? stage.caption_te : (stage.caption_en || stage.caption_te);
+    const cap = $('#scene-caption');
+    const capText = state.lang === 'te' ? stage.caption_te : (stage.caption_en || stage.caption_te);
     if (cap) {
       if (capText) { cap.textContent = capText; cap.hidden = false; }
       else { cap.hidden = true; }
@@ -346,19 +345,19 @@
     renderMilestones(stage);
 
     // Prev/Next
-    var prev = $('#prev-btn'), next = $('#next-btn');
+    const prev = $('#prev-btn'), next = $('#next-btn');
     if (prev) { prev.disabled = i === 0; prev.querySelector('span').textContent = s.prev; }
     if (next) { next.disabled = i === state.stages.length - 1; next.querySelector('span').textContent = s.next; }
-    var back = $('#back-btn'); if (back) back.textContent = s.back;
-    var watchBtn = $('#watchall-btn'); if (watchBtn) watchBtn.textContent = state.autoplay ? s.stopWatch : s.watchAll;
+    const back = $('#back-btn'); if (back) back.textContent = s.back;
+    const watchBtn = $('#watchall-btn'); if (watchBtn) watchBtn.textContent = state.autoplay ? s.stopWatch : s.watchAll;
 
     // Final-stage extras
-    var finale = $('#finale');
+    const finale = $('#finale');
     if (finale) {
       if (stage.id === state.stages.length) {
         finale.hidden = false;
         $('#finale-msg').textContent = s.finalMsg;
-        var rb = $('#replay-btn'); if (rb) rb.textContent = s.replay;
+        const rb = $('#replay-btn'); if (rb) rb.textContent = s.replay;
       } else finale.hidden = true;
     }
 
@@ -366,30 +365,30 @@
       void scene.offsetWidth; // restart transition
       scene.classList.add('scene-enter');
     }
-    var live = $('#scene-live');
+    const live = $('#scene-live');
     if (live) live.textContent = s.stageOf + ' ' + stage.id + ': ' + pick(stage, 'title');
   }
 
   function renderMilestones(stage) {
-    var box = $('#milestones');
+    const box = $('#milestones');
     if (!box) return;
     box.innerHTML = '';
     if (!stage.milestones) { box.hidden = true; return; }
     box.hidden = false;
-    var s = t();
-    var h = document.createElement('h3');
+    const s = t();
+    const h = document.createElement('h3');
     h.textContent = s.hillsTitle;
     box.appendChild(h);
-    var row = document.createElement('ol');
+    const row = document.createElement('ol');
     row.className = 'hills';
-    for (var n = 1; n <= 7; n++) {
-      var li = document.createElement('li');
+    for (let n = 1; n <= 7; n++) {
+      const li = document.createElement('li');
       li.innerHTML = '<span class="hill-dot" aria-hidden="true">' + n + '</span>' +
         '<span class="hill-name">' + esc(s.hill + ' ' + n) + '</span>';
       row.appendChild(li);
     }
     box.appendChild(row);
-    var msg = document.createElement('p');
+    const msg = document.createElement('p');
     msg.className = 'hill-msg';
     msg.textContent = s.hillMsg;
     box.appendChild(msg);
@@ -399,8 +398,8 @@
   function startAutoplay() {
     stopAutoplay();
     if (reducedMotion) return;
-    var s = t();
-    var note = $('#auto-note');
+    const s = t();
+    const note = $('#auto-note');
     if (note) { note.textContent = s.autoOn; note.hidden = false; }
     renderChrome();
     state.autoplay = setInterval(function () {
@@ -412,47 +411,47 @@
   }
   function stopAutoplay() {
     if (state.autoplay) { clearInterval(state.autoplay); state.autoplay = null; }
-    var note = $('#auto-note');
+    const note = $('#auto-note');
     if (note) note.hidden = true;
-    var watchBtn = $('#watchall-btn');
+    const watchBtn = $('#watchall-btn');
     if (watchBtn && state.view === 'scene') watchBtn.textContent = t().watchAll;
   }
 
   /* ---------------- language ---------------- */
   function setLang(lang) {
     state.lang = lang === 'te' ? 'te' : 'en';
-    try { localStorage.setItem('raja-lang', state.lang); } catch (e) {}
+    try { localStorage.setItem('raja-lang', state.lang); } catch { /* ignore */ }
     renderAll();
   }
 
   /* ---------------- ambient music (WebAudio, synthesized) ---------------- */
-  var AudioEngine = {
+  const AudioEngine = {
     on: false, ctx: null, master: null, bellTimer: null, chant: null,
     start: function () {
-      var AC = window.AudioContext || window.webkitAudioContext;
+      const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
       if (!AC) return;
       if (!this.ctx) {
-        var ctx = new AC();
+        const ctx = new AC();
         this.ctx = ctx;
-        var master = ctx.createGain();
+        const master = ctx.createGain();
         master.gain.value = 0.0;
         master.connect(ctx.destination);
         this.master = master;
         // Tanpura-like drone: root + fifth + octave, low and warm.
-        var freqs = [110, 164.81, 220, 277.18];
-        var filt = ctx.createBiquadFilter();
+        const freqs = [110, 164.81, 220, 277.18];
+        const filt = ctx.createBiquadFilter();
         filt.type = 'lowpass'; filt.frequency.value = 620; filt.Q.value = 0.6;
         filt.connect(master);
         freqs.forEach(function (f, idx) {
-          var o = ctx.createOscillator();
+          const o = ctx.createOscillator();
           o.type = idx % 2 ? 'triangle' : 'sine';
           o.frequency.value = f;
-          var g = ctx.createGain();
+          const g = ctx.createGain();
           g.gain.value = idx === 0 ? 0.5 : 0.22;
           // Slow breathing LFO on the drone level.
-          var lfo = ctx.createOscillator();
+          const lfo = ctx.createOscillator();
           lfo.frequency.value = 0.07 + idx * 0.023;
-          var lg = ctx.createGain(); lg.gain.value = 0.06;
+          const lg = ctx.createGain(); lg.gain.value = 0.06;
           lfo.connect(lg); lg.connect(g.gain);
           o.connect(g); g.connect(filt);
           o.start(); lfo.start();
@@ -466,24 +465,24 @@
       // "Om Namo Venkatesaya" chant — loops under the ambient drone.
       try {
         if (!this.chant) {
-          var ch = new Audio('om-namo-venkatesaya.mp3');
+          const ch = new Audio('om-namo-venkatesaya.mp3');
           ch.loop = true;
           ch.volume = 0.85;
           ch.preload = 'auto';
           this.chant = ch;
         }
-        var playP = this.chant.play();
+        const playP = this.chant.play();
         if (playP && playP.catch) playP.catch(function () { /* autoplay guard */ });
-      } catch (e) { /* audio file optional — drone still plays */ }
+      } catch { /* audio file optional — drone still plays */ }
     },
     _bell: function () {
       if (!this.on || !this.ctx) return;
-      var ctx = this.ctx;
-      var o = ctx.createOscillator();
+      const ctx = this.ctx;
+      const o = ctx.createOscillator();
       o.type = 'sine';
       o.frequency.value = [523.25, 587.33, 659.25][Math.floor(Math.random() * 3)];
-      var g = ctx.createGain();
-      var now = ctx.currentTime;
+      const g = ctx.createGain();
+      const now = ctx.currentTime;
       g.gain.setValueAtTime(0.0, now);
       g.gain.linearRampToValueAtTime(0.16, now + 0.02);
       g.gain.exponentialRampToValueAtTime(0.0001, now + 4.5);
@@ -491,15 +490,14 @@
       o.start(now); o.stop(now + 5);
     },
     _scheduleBell: function () {
-      var self = this;
-      function tick() {
-        self._bell();
-        self.bellTimer = setTimeout(tick, 16000 + Math.random() * 16000);
-      }
+      const tick = () => {
+        this._bell();
+        this.bellTimer = setTimeout(tick, 16000 + Math.random() * 16000);
+      };
       this.bellTimer = setTimeout(tick, 9000);
     },
     stop: function () {
-      if (this.chant) { try { this.chant.pause(); } catch (e) {} }
+      if (this.chant) { try { this.chant.pause(); } catch { /* ignore */ } }
       if (!this.ctx) { this.on = false; return; }
       this.on = false;
       this.master.gain.cancelScheduledValues(this.ctx.currentTime);
@@ -507,7 +505,7 @@
     },
     toggle: function () {
       if (this.on) this.stop(); else this.start();
-      var btn = $('#music-toggle');
+      const btn = $('#music-toggle');
       if (btn) btn.textContent = this.on ? t().musicOn : t().musicOff;
       btn.setAttribute('aria-pressed', this.on ? 'true' : 'false');
     }
@@ -515,26 +513,26 @@
 
   /* ---------------- events ---------------- */
   function bindEvents() {
-    var startBtn = $('#start-btn');
+    const startBtn = $('#start-btn');
     if (startBtn) startBtn.addEventListener('click', function () { goToStage(0); });
 
-    var langBtn = $('#lang-toggle');
+    const langBtn = $('#lang-toggle');
     if (langBtn) langBtn.addEventListener('click', function () {
       setLang(state.lang === 'en' ? 'te' : 'en');
     });
 
-    var musicBtn = $('#music-toggle');
+    const musicBtn = $('#music-toggle');
     if (musicBtn) musicBtn.addEventListener('click', function () { AudioEngine.toggle(); });
 
-    var prev = $('#prev-btn');
+    const prev = $('#prev-btn');
     if (prev) prev.addEventListener('click', function () { if (state.index > 0) goToStage(state.index - 1); });
-    var next = $('#next-btn');
+    const next = $('#next-btn');
     if (next) next.addEventListener('click', function () { if (state.index < state.stages.length - 1) goToStage(state.index + 1); });
-    var back = $('#back-btn');
+    const back = $('#back-btn');
     if (back) back.addEventListener('click', function () { stopAutoplay(); showView('landing'); });
-    var replay = $('#replay-btn');
+    const replay = $('#replay-btn');
     if (replay) replay.addEventListener('click', function () { goToStage(0); });
-    var watch = $('#watchall-btn');
+    const watch = $('#watchall-btn');
     if (watch) watch.addEventListener('click', function () {
       if (state.autoplay) { stopAutoplay(); renderChrome(); }
       else { if (state.view !== 'scene') { state.index = 0; renderScene(0, false); showView('scene'); } startAutoplay(); }
@@ -542,7 +540,7 @@
 
     document.addEventListener('keydown', function (ev) {
       if (state.view !== 'scene') return;
-      var tag = (ev.target && ev.target.tagName) || '';
+      const tag = (ev.target && ev.target.tagName) || '';
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (ev.key === 'ArrowRight' || ev.key === ' ') {
         ev.preventDefault();
@@ -558,8 +556,8 @@
 
   /* ---------------- boot ---------------- */
   function init() {
-    var saved = null;
-    try { saved = localStorage.getItem('raja-lang'); } catch (e) {}
+    let saved = null;
+    try { saved = localStorage.getItem('raja-lang'); } catch { /* ignore */ }
     if (saved === 'te' || saved === 'en') state.lang = saved;
     else if (navigator.language && navigator.language.toLowerCase().indexOf('te') === 0) state.lang = 'te';
     bindEvents();

@@ -1,0 +1,7 @@
+# Build context exclusions — keep the image to site content only
+.git
+.github
+Dockerfile
+.dockerignore
+nginx.conf
+*.md

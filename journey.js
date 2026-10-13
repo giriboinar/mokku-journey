@@ -7,9 +7,9 @@
 (function (global) {
   'use strict';
 
-  var IMG = 'stage-';
+  const IMG = 'stage-';
 
-  var STAGES = [
+  const STAGES = [
     {
       id: 1,
       image: IMG + '01.jpg',
